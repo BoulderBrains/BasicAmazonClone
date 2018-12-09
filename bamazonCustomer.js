@@ -14,14 +14,13 @@ var connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function(err) {
     if (err) throw err;
-    // run the start function after the connection is made to prompt the user
     loadProducts();
 });
 
 function loadProducts() {
-    connection.query("SELECT * FROM PRODUCTS", function(err, result) {
+    connection.query("SELECT * FROM products", function(err, res) {
         if (err) throw err;
-        console.table(result);
+        console.table(res);
     });
 }
 
@@ -30,17 +29,23 @@ function actionPrompt() {
         name: "whichItem",
         message: "What would you like to purchase?"
     }, {
-        name: quanityToPurchase,
+        name: "quanityToPurchase",
         message: "How many of those do you want?"
     }).then(function(answer) {
         var chosenItem;
         for (var i = 0; i < results.length; i++) {
-            if (result[i].product_name ==== answer.choice) {
+            if (result[i].product_name === answer.choice) {
                 chosenItem = results[i];
             }
         }
         //check if item is avaliable, if so create createConnection
-        // with update query removing the product and quanity entered. 
+        // with update query removing the product and quanity entered.
+        if (chosenItem.stock_quantity > answer.stock_quantity) {
+            //success go on and purchse
+        }
+        else if (chosenItem.stock_quantity < answer.stock_quantity) {
+            console.log("Not enough of that item in the shop. Come back soon after we restock.");
+        }
 
     })
 }
