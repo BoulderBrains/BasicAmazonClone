@@ -24,3 +24,23 @@ function loadProducts() {
         console.table(result);
     });
 }
+
+function actionPrompt() {
+    inquirer.prompt({
+        name: "whichItem",
+        message: "What would you like to purchase?"
+    }, {
+        name: quanityToPurchase,
+        message: "How many of those do you want?"
+    }).then(function(answer) {
+        var chosenItem;
+        for (var i = 0; i < results.length; i++) {
+            if (result[i].product_name ==== answer.choice) {
+                chosenItem = results[i];
+            }
+        }
+        //check if item is avaliable, if so create createConnection
+        // with update query removing the product and quanity entered. 
+
+    })
+}
