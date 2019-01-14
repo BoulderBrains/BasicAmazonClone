@@ -7,7 +7,7 @@ var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    password: "",
+    password: "password",
     database: "bamazonDB"
 });
 
@@ -18,34 +18,65 @@ connection.connect(function(err) {
 });
 
 function loadProducts() {
-    connection.query("SELECT * FROM products", function(err, res) {
+    connection.query("SELECT * FROM products", function(err, results) {
         if (err) throw err;
-        console.table(res);
+        console.table(results);
     });
+    actionPrompt();
 }
 
 function actionPrompt() {
     inquirer.prompt({
-        name: "whichItem",
+        name: "choice",
+        type: "rawlist",
+        choice: function() {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+                choiceArray.push(results[i].product_name);
+            }
+            return choiceArray;
+        },
         message: "What would you like to purchase?"
     }, {
         name: "quanityToPurchase",
-        message: "How many of those do you want?"
+        type: "input",
+        message: "How many of those do you want?",
+        validate: function(value) {
+            if (isNaN(value) === false) {
+                return true;
+            }
+            return false;
+        }
     }).then(function(answer) {
         var chosenItem;
         for (var i = 0; i < results.length; i++) {
-            if (result[i].product_name === answer.choice) {
+            if (results[i].product_name === answer.choice) {
                 chosenItem = results[i];
             }
         }
         //check if item is avaliable, if so create createConnection
         // with update query removing the product and quanity entered.
-        if (chosenItem.stock_quantity > answer.stock_quantity) {
-            //success go on and purchse
+        if (chosenItem.stock_quantity < answer.stock_quantity) {
+            // we have enough items in stock for your purchased
+            connection.query(
+                "UPDATE products SET ? WHERE ?",
+                [
+                    {
+                        stock_quantity: anwser.quantity
+                    },
+                    {
+                        item_id: chosenItem.item_id
+                    }
+                ],
+                function(error) {
+                    if (error) throw err;
+                    console.log("Item purchased successfully.");
+                    loadProducts();
+                }
+            )
         }
-        else if (chosenItem.stock_quantity < answer.stock_quantity) {
+        else if (chosenItem.stock_quantity > answer.stock_quantity) {
             console.log("Not enough of that item in the shop. Come back soon after we restock.");
         }
-
-    })
+    });
 }
